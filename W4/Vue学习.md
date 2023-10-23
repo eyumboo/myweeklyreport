@@ -1,4 +1,4 @@
-**vue： 创建用户界面的渐进式框架**
+**{vue： 创建用户界面的渐进式框架**
 
 
 
@@ -2035,3 +2035,423 @@ computed:
 
 **...mapState就是展开运算符映射的意思**
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### VUE的mutations
+
+vuex同样遵循单项数据流 ，组件中不能直接改仓库的数据
+
+
+
+如何开启严格模式（组件中不能直接改仓库的数据)
+
+```
+const store=new Vuex.Store({
+strict:true,
+state:{
+...
+}
+})
+```
+
+
+
+**子组件修改state数据的方法**：
+
+
+
+**在store中定义mutation 对象 在该对象中存放修改  state的方法** 
+
+
+
+##### 1 无参方法版
+
+```
+const store=new Vuex.Store({
+strict:true,
+state:{
+count:0
+}
+mutations:{
+add(state)
+{
+state.count++
+}
+}
+})
+```
+
+
+
+
+
+在mutation 对象中的自定义add方法  **第一个形参一定要是state**
+
+组件使用commit
+
+```
+this.$store.commit('mutation 中的自定义方法')
+```
+
+
+
+
+
+
+
+##### 2 有参方法版
+
+```
+const store=new Vuex.Store({
+strict:true,
+state:{
+count:0
+}
+mutations:{
+add(state，value)
+{
+state.count+=value
+}
+}
+})
+```
+
+**传入两个参数 第一个形参固定是state， 第二个为组件传入的参数**
+
+组件使用：
+
+```
+this.$store.commit('mutation 中的自定义方法'，value)
+```
+
+
+
+**注意：最多只能自行传入 一个参数 因此 如果有多个参数** 
+
+**要先去将他们转化成一个obj 再将这个对象当做参数传入**
+
+
+
+
+
+
+
+##### mapMutations
+
+和mapstates很像  是将mutations中的方法映射到组件的methods中。
+
+```
+import{mapMutations } from 'vuex'  //先导入
+
+export  default{
+computed:
+{
+...mapMutations(["方法1"，‘方法2’])
+}
+}
+```
+
+调用：
+
+```
+this.方法1()
+```
+
+
+
+
+
+
+
+### VUEX的异步函数actions
+
+mutation中的操作必须是同步的  当使用axios等异步请求时 
+
+需要将异步函数函数封装在 store的actions对象中
+
+##### 使用
+
+```
+const store=new Vuex.Store({
+strict:true,
+state:{
+count:0
+}
+actions:{
+   sendReuist(context,value)
+   {
+    axios({
+        method:"GET",
+        url: ' http://localhost:3000/posts/1',
+          }).then(function (resonce){
+        
+        console.log(resonce)
+    })
+   }
+}
+})
+```
+
+自定义异步函数 sendReuist  函数内部实现发送get请求  并打印response
+
+
+
+
+
+##### 组件调用异步请求
+
+```
+this.$store.dispatch("sendReuist",value)
+```
+
+
+
+##### mapActions
+
+用法同mapMutations   是将cctions中的方法映射到组件的methods中。
+
+```
+import{mapActions } from 'vuex'  //先导入
+
+export  default{
+computed:
+{
+...mapActions(["方法1"，‘方法2’])
+}
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Vuex的派生状态getters
+
+类似 Vue中的计算属性  这些派生状态依赖于state
+
+```
+const store=new Vuex.Store({
+strict:true,
+state:{
+count:10
+}
+getters:
+{
+finalmoney(state)
+  {
+   return state.count*10
+  }
+}
+})
+```
+
+finalmoney就是派生状态
+
+
+
+mapGetters 类似mapState  也是将属性映射到组件的 computed中 简化代码
+
+```
+import{mapState } from 'vuex'  //先导入
+import{mapGetters } from 'vuex'  //先导入
+
+export  default{
+computed:
+{
+...mapState(["数据名1"，"数据名2"])
+...mapGetters["派生状态1"，'派生状态2'])
+
+}
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+## 30 VUEX的模块化
+
+将其拆分到不同的  store/modules/ XX.js
+
+**模块使用：**
+
+
+
+```
+const state={}
+const mutations={}
+const actions={}
+const getters={}
+
+export default{
+state,
+mutations,
+actions,
+getters
+}
+```
+
+
+
+**store接收**
+
+```
+impo user form './modules/user'
+
+const store= new Vuex.store({
+modules:{
+user:user
+}
+})
+```
+
+
+
+
+
+### 模块中各状态和内置方法的访问方法：
+
+
+
+#### 1  直接访问：
+
+```
+$store.state.模块名.数据名   //访问模块中state的数据
+
+$store.getters['模块名/内部状态名']  // 访问模块中的gatters
+     
+$store.commit（'模块名/方法名',values额外参数）  // 访问模块中的mutations
+
+$store.dispatch("模块名/方法名",values额外参)    // 访问模块中的actions 
+```
+
+
+
+如果不开命名空间     子模块的state还是会被挂载在**根级别**的state中
+
+**子模块的mutations和actions 还是会被挂载到全局**  
+
+
+
+
+
+
+
+
+
+#### 2 map映射根级别
+
+
+
+```
+mapState(['数据名'])
+mapGetters(['数据名'])
+mapMutations(['方法名'])
+mapActions(['方法名'])
+```
+
+
+
+#### 3 map映射 子模块级别  （需要开启命名空间）
+
+
+
+**模块使用：**
+
+在模块的 .js 文件中 开启命名空间
+
+```
+
+export default{
+state,
+mutations,
+actions,
+getters，
+namespace:ture  // 开启命名空间
+}
+```
+
+**这时候各个属性和方法都被挂载到了子模块中**
+
+
+
+此时使用  map映射：
+
+
+
+```
+mapState('模块名'，['数据名'])
+mapGetters(['模块名'，'数据名'])
+mapMutations('模块名'，['方法名'])
+mapActions(['模块名'，'方法名'])
+```
+
+ 
+
+
+
+
+
+## **31 实用插件 vant 和  pstcss**
+
+![](img/Snipaste_2023-10-16_17-36-54.png)
+
+
+
+**全部导入：**
+
+![](img/Snipaste_2023-10-16_17-37-23.png)
+
+​                                                                                                   
+
+
+
+
+
+
+
+
+
+​                                                     **按需求导入**
+
+![](img/Snipaste_2023-10-16_17-38-11.png)
+
+
+
+
+
+
+
+
+
+### pstcss 实现vw适配
+
+
+
+![](img/Snipaste_2023-10-16_17-39-18.png)
