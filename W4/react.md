@@ -1,4 +1,4 @@
-#          react学习
+#             react学习
 
 ## 1 创建开发环境
 
@@ -466,3 +466,457 @@ classNames函数实质是返回了一个字符串
 {样式类名:判断语句}
 ```
 
+
+
+
+
+
+
+## 5 ref获取dom元素
+
+
+
+语法和v3很类似
+
+先导包：
+
+```
+import {useRef} from "react";
+```
+
+
+
+再使用：**使用useRef 创建空的ref  再和dom元素绑定**
+
+​               **ref.current 代表所绑定的 dom元素对象**    
+
+```
+function App() {
+    const textRef = useRef(null)  //先
+    const showText = () => {
+        console.log(textRef.current.value)
+    }
+    return (
+        <div>
+          
+            <input type="text" ref={textRef}/>  //绑定
+            <button onClick={showText}>获取文本框内容</button>
+        </div>
+
+    )
+}
+
+export default App;
+
+```
+
+
+
+
+
+
+
+
+
+## 6  随机id生成插件和Date格式化插件
+
+#### 随机id生成插件;
+
+安装：
+
+```
+npm i uuid
+```
+
+导包：
+
+```
+import {v4 as uuv4} from 'uuid'
+```
+
+
+
+使用：
+
+```
+uuv4()   //生成一个随机不重复的id
+```
+
+
+
+
+
+
+
+
+
+#### Date格式化插件
+
+安装：
+
+```
+npm i dayjs
+```
+
+导包：
+
+```
+import dayjs  from 'dayjs'
+```
+
+​    
+
+使用：
+
+```
+dayjs().format(占位符)
+```
+
+
+
+占位符使用如下：
+
+
+
+![](img/Snipaste_2023-10-23_15-50-27.png)
+
+![](img/Snipaste_2023-10-23_15-50-40.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 7      父子组件通信
+
+
+
+
+
+### 父传子：
+
+类似v3  
+
+父组件使用子组件：
+
+```
+function App() {
+    const name='leebo'
+    return (
+        <div>
+            <Button1 ex={name}></Button1>
+           
+      </div>
+
+    )
+}
+```
+
+格式：
+
+```
+ex={要传入的东西}  可以是简单 或者复杂数据类型 或者是fn 甚至是XML语言。
+```
+
+**传入了一个把name赋给一个叫做ex的值给子组件**
+
+
+
+子组件承接：
+
+子组件的箭头函数内部声明 props 对象  父组件传递的ex就是props对象中的一个属性。
+
+```
+const Button1 = (props) => {
+   
+    return (
+        <button>请点击{props.ex}</button>)
+ 
+
+}
+```
+
+使用：{props.ex}
+
+
+
+
+
+**props是只读  无法在子组件中修改。**
+
+
+
+
+
+#### 特殊的props  ：props.children
+
+把内容嵌套在子组件标签中   子组件内会自动在叫做children的props属性中接收该内容。
+
+```
+function App() {
+    const name='leebo'
+    return (
+        <div>
+            <Button1 >
+            <div>helllo world </div>  //内容嵌套在子组件标签中
+            </Button1>
+       </div>
+
+    )
+}
+```
+
+
+
+子组件接受使用：
+
+```
+{props.children}
+```
+
+
+
+
+
+### 子传父：
+
+实质是父传递给子组件一个修改方法  子组件通过这个修改方法 去修改父组件的值
+
+```
+const Button1 = (props) => {
+const  thismsg = 'hello world'
+    return(
+        <div>
+            <button onClick={()=>props.abcChange(thismsg)}>发送给父组件</button>
+        </div>
+    )
+
+}
+
+
+function App() {
+   const change=(msg)=>
+   {
+       console.log(msg)
+   }
+
+   return(
+      <div>
+          <Button1 abcChange={change}></Button1>
+      </div>
+   )
+}
+
+export default App;
+
+```
+
+**父亲传递给子组件一个叫做 abcChange的 函数 子组件调用 传递过来的函数  实现对父组件的值传递**。
+
+
+
+
+
+
+
+
+
+
+
+### 利用父子通信和状态  实现 兄弟组件的通信：
+
+目的  SonA传递信息给SonB
+
+实现思路：
+
+SonA先通过 子传父  传递信息给父组件
+
+在父组件中定义state状态量  将传递过来的值 进行setState
+
+在将这个state 值使用 父传子通信 传递给组件SonB。
+
+
+
+
+
+
+
+
+
+
+
+## 8  隔代通信
+
+**使用creatContext**
+
+语法：
+
+导包：
+
+```
+import {createContext, useContext} from "react";
+```
+
+创建实例化Context对象：
+
+```
+const msgContext= createContext()
+```
+
+
+
+在祖先组件中
+
+**使用：<msgContext.Provider value={msg}>**
+
+**</msgContext.Provider> 这对标签包裹住 子组件的标签  value={ } 传入要传递给后代的值**
+
+```
+function App() {
+const msg='hellowold'
+
+   return(
+
+         <msgContext.Provider value={msg}>
+            <div> <Son></Son></div>
+         </msgContext.Provider>
+
+   )
+}
+```
+
+
+
+**后代组件使用：useContext(Context的名字)**
+
+```
+function SonSon(){
+
+    const msg=useContext(msgContext)  //调用msgContext的value
+    return(<div>
+        <div>我是SonSon</div>
+        <div>{msg}</div>
+
+    </div>)
+}
+```
+
+
+
+
+
+## 9 useEffect       
+
+ 
+
+用于在react中创建不是 由于事件引起的 而是渲染本身引起的操作：
+
+例如：发送ajex请求 修改dom等等 
+
+导包：
+
+```
+import {useEffect} from "react";
+```
+
+使用语法：
+
+```
+useEffect(()=>{
+//执行额外的操作 如发送请求获取数据等等 比如：
+async function getData()
+{
+const res = await fetch(URL)
+const jsonRes=await res.json()
+}
+getData()  //在声明完方法后一定不要忘记调用
+},[])
+```
+
+第一个参数是一个回调函数
+
+第二个参数**是依赖项参数 数组** 为[]时候 只在渲染的时候执行一次
+
+![](img/Snipaste_2023-10-23_17-35-56.png)
+
+
+
+
+
+### useEffect 清除副作用：
+
+比如在useEffect的回调函数中声明了一个 计时器 想要卸载该组件的时候 就要把这个定时器再次清理掉
+
+语法：return()=>{}清除
+
+```
+useEffect(()=>{
+//执行额外的操作 如发送请求获取数据等等 比如：
+const timer = setINterval(()=>{
+console.log('hello world')
+},1000)
+
+
+return()=>{
+clearInterval(timer)
+}
+
+},[])
+```
+
+
+
+
+
+## 10 自定义hook函数
+
+都是要以use开头
+
+封装一些可以复用的逻辑代码 
+
+**将那些需要暴露出去的状态和 回调函数 以对象的形式return出去**
+
+例如：封装一个toggle 对一个flag状态值每次都可以取反
+
+```
+function useToggle(){
+const [flag,setFlag] =useState(true)
+
+const toggle=()=>{
+setFlag(!flag)
+}
+
+
+return{
+value,
+toggle
+  }
+
+
+}
+```
+
+其他组件使用：
+
+```
+const {flag,toggle}=useToggle()  //{}解构出来
+```
+
+
+
+
+
+## 11  hook的使用规则
+
+1  只能在组件或者其他的自定义hook函数中使用
+
+
+
+2 不能嵌套在if  for 或者其他函数中  只能在组件的最顶层使用。

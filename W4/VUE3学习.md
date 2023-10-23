@@ -303,7 +303,7 @@ defineProps 声明宏定义
 script 中使用：
 
 ```
-console.log(pros.msg)
+console.log(props.msg)
 ```
 
 
