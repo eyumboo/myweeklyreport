@@ -1564,7 +1564,7 @@ const router= new VueRouter(
 
 export default router
 
-//导出default对象 roueter
+//导出default对象 router
 ```
 
 
